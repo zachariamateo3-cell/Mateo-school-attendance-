@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shule Yetu — Mfumo wa Mahudhurio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --green: #1EB53A;
+    --green-dark: #0B7A22;
+    --yellow: #FCD116;
+    --black: #0A0A0A;
+    --blue: #00A3DD;
+    --bg: #FAFAF7;
+    --card: #ffffff;
+    --border: #E4E2DA;
+    --text: #1C1C1A;
+    --text-muted: #6B665E;
+    --danger: #A32D2D;
+    --danger-bg: #FCEBEB;
+    --success: #0B7A22;
+    --success-bg: #EAF3DE;
+    --radius: 10px;
+    --serif: Georgia, 'Times New Roman', serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  a { color: inherit; }
+
+  /* ---------- PUBLIC SITE ---------- */
+  .flag-strip { height: 6px; display: flex; }
+  .flag-strip span { flex: 1; }
+  .flag-strip .g { background: var(--green); }
+  .flag-strip .y { background: var(--yellow); }
+  .flag-strip .k { background: var(--black); }
+  .flag-strip .b { background: var(--blue); }
+
+  .pub-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; background: var(--card); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .pub-header .brand { display: flex; align-items: center; gap: 10px; }
+  .pub-header .brand .mark {
+    width: 34px; height: 34px; border-radius: 8px; background: var(--green);
+    display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px;
+  }
+  .pub-header .brand h1 { font-size: 15px; margin: 0; font-family: var(--serif); }
+  .pub-header .brand p { margin: 0; font-size: 11px; color: var(--text-muted); }
+  .pub-header button.enter-btn {
+    padding: 9px 16px; background: var(--black); color: white; border: none;
+    border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  .hero {
+    padding: 56px 22px 44px;
+    background: linear-gradient(180deg, #0A0A0A 0%, #123A1A 100%);
+    color: white; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -60px; right: -60px; width: 220px; height: 220px;
+    border-radius: 50%; background: var(--yellow); opacity: 0.12;
+  }
+  .hero .eyebrow {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--yellow);
+    font-weight: 600; margin-bottom: 14px;
+  }
+  .hero h2 {
+    font-family: var(--serif); font-size: 30px; line-height: 1.25; margin: 0 0 14px; font-weight: 400;
+  }
+  .hero h2 em { font-style: normal; color: var(--yellow); }
+  .hero p { font-size: 15px; color: #D8D8D2; max-width: 340px; margin: 0 auto 22px; line-height: 1.6; }
+  .hero button {
+    padding: 13px 26px; background: var(--yellow); color: #1C1C1A; border: none;
+    border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .stats-row .stat { background: var(--card); padding: 20px 10px; text-align: center; }
+  .stats-row .stat .num { font-family: var(--serif); font-size: 26px; color: var(--green-dark); }
+  .stats-row .stat .lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .section { padding: 40px 22px; max-width: 480px; margin: 0 auto; }
+  .section .eyebrow {
+    font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green-dark);
+    font-weight: 600; margin-bottom: 8px;
+  }
+  .section h3 { font-family: var(--serif); font-size: 22px; margin: 0 0 14px; font-weight: 400; }
+  .section p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 0 0 14px; }
+
+  .feature-list { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+  .feature-list .item {
+    display: flex; gap: 14px; align-items: flex-start; padding: 14px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px;
+  }
+  .feature-list .item .dot {
+    width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+  }
+  .feature-list .item:nth-child(1) .dot { background: var(--green); }
+  .feature-list .item:nth-child(2) .dot { background: var(--blue); }
+  .feature-list .item:nth-child(3) .dot { background: var(--yellow); }
+  .feature-list .item h4 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+  .feature-list .item p { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+  .contact-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+    border-left: 3px solid var(--green);
+  }
+  .contact-card p { margin: 0 0 6px; font-size: 13px; }
+  .contact-card p strong { display: inline-block; width: 88px; color: var(--text-muted); font-weight: 500; }
+
+  .pub-footer {
+    text-align: center; padding: 24px 20px; font-size: 12px; color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* ---------- INTERNAL APP ---------- */
+  header.app-header {
+    background: var(--card); padding: 16px 20px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center;
+  }
+  header.app-header h1 { font-size: 17px; margin: 0 0 2px; font-family: var(--serif); font-weight: 400; }
+  header.app-header p { margin: 0; font-size: 12px; color: var(--text-muted); }
+  #logout-btn, #back-btn {
+    padding: 7px 12px; border: 1px solid var(--border); background: var(--bg);
+    border-radius: 8px; font-size: 12px; color: var(--text-muted); cursor: pointer;
+  }
+
+  nav.app-nav {
+    display: flex; gap: 6px; padding: 10px 16px; background: var(--card);
+    border-bottom: 1px solid var(--border); overflow-x: auto; position: sticky; top: 60px; z-index: 9;
+  }
+  nav.app-nav button {
+    flex: 1; padding: 9px 8px; border: 1px solid var(--border); background: var(--bg);
+    border-radius: var(--radius); font-size: 13px; font-weight: 500; color: var(--text-muted);
+    cursor: pointer; white-space: nowrap;
+  }
+  nav.app-nav button.active { background: var(--green); color: white; border-color: var(--green); }
+
+  main.app-main { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 60px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 12px;
+  }
+  .card h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
+  .card .sub { font-size: 13px; color: var(--text-muted); margin: 0 0 8px; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .badge.present { background: var(--success-bg); color: var(--success); }
+  .badge.absent { background: var(--danger-bg); color: var(--danger); }
+  .role-badge {
+    display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    background: var(--success-bg); color: var(--success); margin-left: 6px;
+  }
+  .passport-photo {
+    width: 72px; height: 72px; border-radius: 12px; object-fit: cover; border: 2px solid var(--green);
+    background: var(--bg);
+  }
+  .passport-placeholder {
+    width: 72px; height: 72px; border-radius: 12px; border: 2px dashed var(--border);
+    display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 11px; text-align: center;
+  }
+  .avatar-sm {
+    width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border);
+  }
+  .avatar-sm-placeholder {
+    width: 40px; height: 40px; border-radius: 8px; background: var(--success-bg); color: var(--success);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+  }
+  textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 14px; background: var(--bg); color: var(--text); font-family: inherit; resize: vertical; min-height: 70px;
+  }
+  .self-mark-btn {
+    width: 100%; padding: 14px; background: var(--green); color: white; border: none;
+    border-radius: var(--radius); font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px;
+  }
+  .status-pill {
+    display: inline-block; padding: 8px 14px; border-radius: var(--radius); font-size: 14px; font-weight: 600;
+    background: var(--success-bg); color: var(--success); text-align: center; width: 100%;
+  }
+  .remark-item {
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .remark-item:last-child { border-bottom: none; }
+  .remark-item .meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  select#dharura-reason, select.plain-select {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 14px; background: var(--bg); color: var(--text);
+  }
+
+  label { display: block; font-size: 13px; color: var(--text-muted); margin: 10px 0 4px; }
+  input, select {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 14px; background: var(--bg); color: var(--text);
+  }
+  button.primary {
+    width: 100%; padding: 11px; background: var(--green); color: white; border: none;
+    border-radius: var(--radius); font-size: 14px; font-weight: 600; margin-top: 14px; cursor: pointer;
+  }
+  button.small {
+    padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text-muted); cursor: pointer;
+  }
+  button.small.danger { color: var(--danger); border-color: var(--danger-bg); }
+  .empty { text-align: center; color: var(--text-muted); font-size: 13px; padding: 30px 10px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+  .stat .label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .stat .value { font-size: 20px; font-weight: 700; }
+  .date-picker { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .date-picker input { flex: 1; }
+  .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+  .error-text { color: var(--danger); font-size: 13px; margin-top: 6px; display: none; }
+  .link-btn {
+    background: none; border: none; color: var(--green-dark); font-size: 13px;
+    cursor: pointer; padding: 8px 0; display: block; text-align: center; width: 100%;
+  }
+  .auth-wrap { max-width: 380px; margin: 0 auto; padding: 40px 16px; }
+  .auth-wrap .card { padding: 20px; }
+  .export-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .export-row button {
+    flex: 1; padding: 10px; border-radius: var(--radius); font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--text);
+  }
+  .export-row button.pdf { color: var(--danger); border-color: var(--danger-bg); background: var(--danger-bg); }
+</style>
+</head>
+<body>
+
+<div id="public-site">
+  <div class="flag-strip"><span class="g"></span><span class="y"></span><span class="k"></span><span class="b"></span></div>
+  <header class="pub-header">
+    <div class="brand">
+      <div class="mark">S</div>
+      <div>
+        <h1>Shule Yetu</h1>
+        <p>Mfumo wa Mahudhurio</p>
+      </div>
+    </div>
+    <button class="enter-btn" onclick="showApp()">Ingia</button>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow">Elimu ya kisasa</p>
+    <h2>Mahudhurio ya wanafunzi, <em>yaliyo wazi</em> kwa kila mzazi na mwalimu</h2>
+    <p>Fuatilia uwepo wa wanafunzi darasani kwa urahisi — walimu wanaweka mahudhurio, wanafunzi wanaona rekodi yao, na uongozi unaona kila kitu.</p>
+    <button onclick="showApp()">Ingia mfumoni</button>
+  </section>
+
+  <div class="stats-row">
+    <div class="stat"><div class="num">15</div><div class="lbl">Wanafunzi</div></div>
+    <div class="stat"><div class="num">4</div><div class="lbl">Walimu</div></div>
+    <div class="stat"><div class="num">100%</div><div class="lbl">Uwazi</div></div>
+  </div>
+
+  <section class="section">
+    <p class="eyebrow">Kuhusu mfumo</p>
+    <h3>Mahudhurio bila karatasi</h3>
+    <p>Badala ya madaftari ya karatasi yanayoweza kupotea, mahudhurio ya kila mwanafunzi yanahifadhiwa mtandaoni, salama, na yanapatikana wakati wowote.</p>
+    <div class="feature-list">
+      <div class="item">
+        <div class="dot"></div>
+        <div><h4>Kwa walimu</h4><p>Weka mahudhurio ya darasa kwa dakika chache kila siku.</p></div>
+      </div>
+      <div class="item">
+        <div class="dot"></div>
+        <div><h4>Kwa wanafunzi</h4><p>Ona rekodi yako binafsi ya uwepo darasani wakati wowote.</p></div>
+      </div>
+      <div class="item">
+        <div class="dot"></div>
+        <div><h4>Kwa uongozi</h4><p>Pata ripoti kamili ya shule nzima, tayari kwa uchambuzi.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <p class="eyebrow">Wasiliana nasi</p>
+    <h3>Karibu shuleni</h3>
+    <div class="contact-card">
+      <p><strong>Simu</strong> +255 700 000 000</p>
+      <p><strong>Barua pepe</strong> info@shuleyetu.ac.tz</p>
+      <p><strong>Mahali</strong> Tanzania</p>
+    </div>
+  </section>
+
+  <footer class="pub-footer">Shule Yetu &middot; Mfumo wa Mahudhurio</footer>
+</div>
+
+<div id="app-site" style="display:none;">
+  <header class="app-header">
+    <div>
+      <h1 id="app-title">Mfumo wa Mahudhurio</h1>
+      <p id="header-sub">Shule Yetu</p>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button id="back-btn" onclick="showPublic()">Rudi</button>
+      <button id="logout-btn" onclick="logout()" style="display:none;">Toka</button>
+    </div>
+  </header>
+  <main class="app-main" id="main">
+    <div class="loading">Inapakia...</div>
+  </main>
+</div>
+
+<script>
+let teachers = [];
+let students = [];
+let attendance = {}; // { date: { studentId: status } }
+let remarks = [];
+let parentMessages = [];
+let emergencies = [];
+let admin = null;
+let currentUser = null; // { role: 'admin'|'teacher'|'student', id? }
+let currentTab = 'students';
+let authScreen = 'login';
+let selectedDate = new Date().toISOString().slice(0,10);
+let dataLoaded = false;
+
+const SUPABASE_URL = 'https://aprruzakntzvgagsvfyf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwcnJ1emFrbnR6dmdhZ3N2ZnlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTYwMDMsImV4cCI6MjEwMzQzMjAwM30.oAkIrmXve_LWVxo6jhH3jnh1H5YYJoTd-NcDb-uBvhQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+});
+
+function uid() { return 's' + Date.now() + Math.floor(Math.random()*1000); }
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function showApp() {
+  document.getElementById('public-site').style.display = 'none';
+  document.getElementById('app-site').style.display = 'block';
+  if (!dataLoaded) { loadData(); } else { authScreen = currentUser ? authScreen : 'login'; if (currentUser) enterApp(); else renderAuth(); }
+}
+function showPublic() {
+  document.getElementById('app-site').style.display = 'none';
+  document.getElementById('public-site').style.display = 'block';
+}
+
+async function loadData() {
+  try {
+    const { data: adminRows } = await sb.from('school_admin').select('*').limit(1);
+    admin = (adminRows && adminRows.length > 0) ? adminRows[0] : null;
+  } catch (e) { console.error('load admin failed', e); admin = null; }
+
+  try {
+    const { data: teacherRows } = await sb.from('teachers').select('*');
+    teachers = teacherRows || [];
+  } catch (e) { console.error('load teachers failed', e); teachers = []; }
+
+  try {
+    const { data: studentRows } = await sb.from('students').select('*');
+    students = studentRows || [];
+  } catch (e) { console.error('load students failed', e); students = []; }
+
+  try {
+    const { data: attRows } = await sb.from('student_attendance').select('*');
+    attendance = {};
+    (attRows || []).forEach(r => {
+      if (!attendance[r.date]) attendance[r.date] = {};
+      attendance[r.date][r.student_id] = r.status;
+    });
+  } catch (e) { console.error('load attendance failed', e); attendance = {}; }
+
+  try {
+    const { data } = await sb.from('remarks').select('*').order('created_at', { ascending: false });
+    remarks = data || [];
+  } catch (e) { console.error('load remarks failed', e); remarks = []; }
+
+  try {
+    const { data } = await sb.from('parent_messages').select('*').order('created_at', { ascending: false });
+    parentMessages = data || [];
+  } catch (e) { console.error('load messages failed', e); parentMessages = []; }
+
+  try {
+    const { data } = await sb.from('emergencies').select('*').order('created_at', { ascending: false });
+    emergencies = data || [];
+  } catch (e) { console.error('load emergencies failed', e); emergencies = []; }
+
+  dataLoaded = true;
+  authScreen = admin ? 'login' : 'setup';
+  renderAuth();
+}
+
+// ---------- AUTH ----------
+function renderAuth() {
+  document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'inline-block';
+  document.getElementById('header-sub').textContent = 'Shule Yetu';
+  const main = document.getElementById('main');
+
+  if (authScreen === 'setup') {
+    main.innerHTML = `
+      <div class="auth-wrap"><div class="card">
+        <h3>Weka akaunti ya Admin</h3>
+        <p class="sub">Hii ndiyo akaunti kuu ya kusimamia shule nzima.</p>
+        <label>Jina la mtumiaji</label>
+        <input id="setup-username" placeholder="mfano: admin" />
+        <label>Password</label>
+        <input id="setup-password" type="password" placeholder="Weka password" />
+        <label>PIN ya dharura (nambari 4)</label>
+        <input id="setup-pin" type="text" inputmode="numeric" maxlength="4" placeholder="mfano: 1234" />
+        <div class="error-text" id="setup-error"></div>
+        <button class="primary" onclick="doSetupAdmin()">Tengeneza akaunti ya Admin</button>
+      </div></div>`;
+  } else if (authScreen === 'login') {
+    main.innerHTML = `
+      <div class="auth-wrap"><div class="card">
+        <h3>Ingia kwenye mfumo</h3>
+        <label>Jina la mtumiaji</label>
+        <input id="login-username" placeholder="Username yako" />
+        <label>Password</label>
+        <input id="login-password" type="password" placeholder="Password yako" />
+        <div class="error-text" id="login-error"></div>
+        <button class="primary" onclick="doLogin()">Ingia</button>
+        <button class="link-btn" onclick="authScreen='forgot'; renderAuth();">Umesahau password?</button>
+      </div></div>`;
+  } else if (authScreen === 'forgot') {
+    main.innerHTML = `
+      <div class="auth-wrap"><div class="card">
+        <h3>Umesahau password?</h3>
+        <p class="sub">Kama wewe ni Admin, tumia PIN yako ya dharura. Walimu na wanafunzi wanaombwa Admin awabadilishie.</p>
+        <label>Jina la mtumiaji (Admin)</label>
+        <input id="forgot-username" placeholder="Username ya admin" />
+        <label>PIN ya dharura</label>
+        <input id="forgot-pin" type="text" inputmode="numeric" maxlength="4" placeholder="Nambari 4" />
+        <label>Password mpya</label>
+        <input id="forgot-newpass" type="password" placeholder="Weka password mpya" />
+        <div class="error-text" id="forgot-error"></div>
+        <button class="primary" onclick="doForgotReset()">Weka password mpya</button>
+        <button class="link-btn" onclick="authScreen='login'; renderAuth();">Rudi kuingia</button>
+      </div></div>`;
+  }
+}
+
+async function doSetupAdmin() {
+  const username = document.getElementById('setup-username').value.trim();
+  const password = document.getElementById('setup-password').value;
+  const pin = document.getElementById('setup-pin').value.trim();
+  const err = document.getElementById('setup-error');
+  if (!username || !password || !/^\d{4}$/.test(pin)) {
+    err.textContent = 'Jaza username, password, na PIN ya nambari 4 sahihi.';
+    err.style.display = 'block'; return;
+  }
+  const { error } = await sb.from('school_admin').insert({ username, password, pin });
+  if (error) { err.textContent = 'Imeshindikana: ' + error.message; err.style.display = 'block'; return; }
+  admin = { username, password, pin };
+  authScreen = 'login';
+  renderAuth();
+}
+
+function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  if (!username || !password) { err.textContent = 'Jaza username na password.'; err.style.display = 'block'; return; }
+
+  if (admin && username === admin.username && password === admin.password) {
+    currentUser = { role: 'admin' }; enterApp(); return;
+  }
+  const teacher = teachers.find(t => t.username === username && t.password === password);
+  if (teacher) { currentUser = { role: 'teacher', id: teacher.id }; enterApp(); return; }
+  const student = students.find(s => s.username === username && s.password === password);
+  if (student) { currentUser = { role: 'student', id: student.id }; enterApp(); return; }
+
+  err.textContent = 'Username au password si sahihi.';
+  err.style.display = 'block';
+}
+
+async function doForgotReset() {
+  const username = document.getElementById('forgot-username').value.trim();
+  const pin = document.getElementById('forgot-pin').value.trim();
+  const newpass = document.getElementById('forgot-newpass').value;
+  const err = document.getElementById('forgot-error');
+  if (!admin || username !== admin.username || pin !== admin.pin) {
+    err.textContent = 'Username au PIN si sahihi.'; err.style.display = 'block'; return;
+  }
+  if (!newpass) { err.textContent = 'Weka password mpya.'; err.style.display = 'block'; return; }
+  const { error } = await sb.from('school_admin').update({ password: newpass }).eq('username', admin.username);
+  if (error) { err.textContent = 'Imeshindikana: ' + error.message; err.style.display = 'block'; return; }
+  admin.password = newpass;
+  authScreen = 'login';
+  renderAuth();
+}
+
+function logout() {
+  currentUser = null;
+  authScreen = 'login';
+  renderAuth();
+  document.getElementById('logout-btn').style.display = 'none';
+}
+
+function enterApp() {
+  document.getElementById('logout-btn').style.display = 'inline-block';
+  document.getElementById('back-btn').style.display = 'none';
+  if (currentUser.role === 'admin') {
+    document.getElementById('header-sub').textContent = 'Umeingia kama Admin';
+    currentTab = 'students'; render();
+  } else if (currentUser.role === 'teacher') {
+    document.getElementById('header-sub').textContent = 'Umeingia kama Mwalimu';
+    currentTab = 'mark'; render();
+  } else {
+    document.getElementById('header-sub').textContent = 'Umeingia kama Mwanafunzi';
+    renderStudentSelf();
+  }
+}
+
+// ---------- RENDER ROUTER ----------
+function render() {
+  if (currentUser.role === 'student') { renderStudentSelf(); return; }
+  const main = document.getElementById('main');
+  let navButtons = '';
+  if (currentUser.role === 'admin') {
+    navButtons = `
+      <button class="${currentTab==='students'?'active':''}" onclick="switchTab('students')">Wanafunzi</button>
+      <button class="${currentTab==='teachers'?'active':''}" onclick="switchTab('teachers')">Walimu</button>
+      <button class="${currentTab==='mark'?'active':''}" onclick="switchTab('mark')">Mahudhurio</button>
+      <button class="${currentTab==='report'?'active':''}" onclick="switchTab('report')">Ripoti</button>
+      <button class="${currentTab==='dharura'?'active':''}" onclick="switchTab('dharura')">Dharura</button>
+    `;
+  } else {
+    navButtons = `
+      <button class="${currentTab==='mark'?'active':''}" onclick="switchTab('mark')">Mahudhurio</button>
+      <button class="${currentTab==='students'?'active':''}" onclick="switchTab('students')">Wanafunzi</button>
+      <button class="${currentTab==='remarks'?'active':''}" onclick="switchTab('remarks')">Maoni</button>
+      <button class="${currentTab==='messages'?'active':''}" onclick="switchTab('messages')">Ujumbe</button>
+      <button class="${currentTab==='dharura'?'active':''}" onclick="switchTab('dharura')">Dharura</button>
+    `;
+  }
+  const navHtml = `<nav class="app-nav" style="margin:-16px -16px 16px;">${navButtons}</nav>`;
+
+  let body = '';
+  if (currentTab === 'students') body = studentsBodyHtml();
+  else if (currentTab === 'teachers') body = teachersBodyHtml();
+  else if (currentTab === 'mark') body = markAttendanceBodyHtml();
+  else if (currentTab === 'report') body = reportBodyHtml();
+  else if (currentTab === 'remarks') body = remarksBodyHtml();
+  else if (currentTab === 'messages') body = messagesBodyHtml();
+  else if (currentTab === 'dharura') body = dharuraAdminBodyHtml();
+
+  main.innerHTML = navHtml + body;
+}
+function switchTab(tab) { currentTab = tab; render(); }
+
+// ---------- WANAFUNZI ----------
+function studentsBodyHtml() {
+  const isAdmin = currentUser.role === 'admin';
+  let listHtml = '';
+  if (students.length === 0) {
+    listHtml = '<div class="empty">Hakuna wanafunzi bado.</div>';
+  } else {
+    listHtml = students.map(s => `
+      <div class="card">
+        <div class="row">
+          <div style="display:flex; gap:10px; align-items:center;">
+            ${s.photo ? `<img src="${s.photo}" class="avatar-sm" />` : `<div class="avatar-sm-placeholder">${escapeHtml((s.name||'?').charAt(0))}</div>`}
+            <div>
+              <h3>${escapeHtml(s.name)}</h3>
+              <p class="sub" style="margin:0;">Darasa: ${escapeHtml(s.class)} &middot; ${escapeHtml(s.username)}</p>
+              ${s.parent_phone ? `<p class="sub" style="margin:0;">Mzazi: ${escapeHtml(s.parent_phone)}</p>` : ''}
+            </div>
+          </div>
+        </div>
+        ${isAdmin ? `
+        <div style="display:flex; gap:6px; margin-top:10px;">
+          <button class="small" onclick="resetPassword('student','${s.id}')">Badilisha password</button>
+          <button class="small danger" onclick="deleteStudent('${s.id}')">Futa</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  return `
+    <div class="stat-grid">
+      <div class="stat"><div class="label">Jumla ya wanafunzi</div><div class="value">${students.length}</div></div>
+      <div class="stat"><div class="label">Madarasa</div><div class="value">${new Set(students.map(s=>s.class)).size}</div></div>
+    </div>
+    ${listHtml}
+    ${isAdmin ? `
+    <div class="card">
+      <h3>Ongeza mwanafunzi mpya</h3>
+      <label>Jina kamili</label>
+      <input id="new-s-name" placeholder="mfano: Juma Hassan" />
+      <label>Darasa</label>
+      <input id="new-s-class" placeholder="mfano: Darasa la 5" />
+      <label>Namba ya simu ya mzazi</label>
+      <input id="new-s-parent" placeholder="mfano: 255700000000" />
+      <label>Picha ya passport (hiari)</label>
+      <input id="new-s-photo" type="file" accept="image/*" />
+      <label>Username ya kuingia</label>
+      <input id="new-s-username" placeholder="mfano: juma5" />
+      <label>Password ya awali</label>
+      <input id="new-s-password" type="password" placeholder="Weka password" />
+      <div id="student-error" class="error-text"></div>
+      <button class="primary" onclick="addStudent()">Ongeza mwanafunzi</button>
+    </div>` : ''}
+  `;
+}
+
+async function addStudent() {
+  const name = document.getElementById('new-s-name').value.trim();
+  const cls = document.getElementById('new-s-class').value.trim();
+  const parentPhone = document.getElementById('new-s-parent').value.trim();
+  const photoFile = document.getElementById('new-s-photo').files[0];
+  const username = document.getElementById('new-s-username').value.trim();
+  const password = document.getElementById('new-s-password').value;
+  const err = document.getElementById('student-error');
+  if (!name || !cls || !username || !password) {
+    err.textContent = 'Jaza taarifa zote.'; err.style.display = 'block'; return;
+  }
+  if (usernameTaken(username)) {
+    err.textContent = 'Username hiyo tayari inatumika.'; err.style.display = 'block'; return;
+  }
+  let photo = null;
+  if (photoFile) {
+    try { photo = await fileToBase64(photoFile); }
+    catch (e) { err.textContent = 'Imeshindikana kusoma picha.'; err.style.display = 'block'; return; }
+  }
+  const newStudent = { id: uid(), name, class: cls, username, password, parent_phone: parentPhone || null, photo };
+  const { error } = await sb.from('students').insert(newStudent);
+  if (error) { err.textContent = 'Imeshindikana: ' + error.message; err.style.display = 'block'; return; }
+  students.push(newStudent);
+  render();
+}
+
+async function deleteStudent(id) {
+  const { error } = await sb.from('students').delete().eq('id', id);
+  if (error) { alert('Imeshindikana: ' + error.message); return; }
+  students = students.filter(s => s.id !== id);
+  render();
+}
+
+function usernameTaken(username) {
+  return teachers.some(t => t.username === username) ||
+         students.some(s => s.username === username) ||
+         (admin && admin.username === username);
+}
+
+// ---------- WALIMU (ADMIN ONLY) ----------
+function teachersBodyHtml() {
+  let listHtml = '';
+  if (teachers.length === 0) {
+    listHtml = '<div class="empty">Hakuna walimu bado.</div>';
+  } else {
+    listHtml = teachers.map(t => `
+      <div class="card">
+        <div class="row">
+          <div>
+            <h3>${escapeHtml(t.name)}</h3>
+            <p class="sub">${escapeHtml(t.subject || '')} &middot; Username: ${escapeHtml(t.username)}</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; margin-top:10px;">
+          <button class="small" onclick="resetPassword('teacher','${t.id}')">Badilisha password</button>
+          <button class="small danger" onclick="deleteTeacher('${t.id}')">Futa</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  return `
+    <div class="stat-grid">
+      <div class="stat"><div class="label">Jumla ya walimu</div><div class="value">${teachers.length}</div></div>
+      <div class="stat"><div class="label">Wanafunzi</div><div class="value">${students.length}</div></div>
+    </div>
+    ${listHtml}
+    <div class="card">
+      <h3>Ongeza mwalimu mpya</h3>
+      <label>Jina kamili</label>
+      <input id="new-t-name" placeholder="mfano: Mwalimu Neema" />
+      <label>Somo/Nafasi</label>
+      <input id="new-t-subject" placeholder="mfano: Hisabati" />
+      <label>Username ya kuingia</label>
+      <input id="new-t-username" placeholder="mfano: neema" />
+      <label>Password ya awali</label>
+      <input id="new-t-password" type="password" placeholder="Weka password" />
+      <div id="teacher-error" class="error-text"></div>
+      <button class="primary" onclick="addTeacher()">Ongeza mwalimu</button>
+    </div>
+  `;
+}
+
+async function addTeacher() {
+  const name = document.getElementById('new-t-name').value.trim();
+  const subject = document.getElementById('new-t-subject').value.trim();
+  const username = document.getElementById('new-t-username').value.trim();
+  const password = document.getElementById('new-t-password').value;
+  const err = document.getElementById('teacher-error');
+  if (!name || !username || !password) {
+    err.textContent = 'Jaza taarifa zote muhimu.'; err.style.display = 'block'; return;
+  }
+  if (usernameTaken(username)) {
+    err.textContent = 'Username hiyo tayari inatumika.'; err.style.display = 'block'; return;
+  }
+  const newTeacher = { id: uid(), name, subject, username, password };
+  const { error } = await sb.from('teachers').insert(newTeacher);
+  if (error) { err.textContent = 'Imeshindikana: ' + error.message; err.style.display = 'block'; return; }
+  teachers.push(newTeacher);
+  render();
+}
+
+async function deleteTeacher(id) {
+  const { error } = await sb.from('teachers').delete().eq('id', id);
+  if (error) { alert('Imeshindikana: ' + error.message); return; }
+  teachers = teachers.filter(t => t.id !== id);
+  render();
+}
+
+async function resetPassword(type, id) {
+  const list = type === 'teacher' ? teachers : students;
+  const table = type === 'teacher' ? 'teachers' : 'students';
+  const person = list.find(p => p.id === id);
+  if (!person) return;
+  const newpass = prompt('Weka password mpya kwa ' + person.name + ':');
+  if (newpass === null) return;
+  if (!newpass.trim()) { alert('Password haiwezi kuwa tupu.'); return; }
+  const { error } = await sb.from(table).update({ password: newpass.trim() }).eq('id', id);
+  if (error) { alert('Imeshindikana: ' + error.message); return; }
+  person.password = newpass.trim();
+  alert('Password ya ' + person.name + ' imebadilishwa.');
+  render();
+}
+
+// ---------- MAHUDHURIO (WALIMU + ADMIN) ----------
+function markAttendanceBodyHtml() {
+  const dayRecord = attendance[selectedDate] || {};
+  let rows = '';
+  if (students.length === 0) {
+    rows = '<div class="empty">Hakuna wanafunzi bado.</div>';
+  } else {
+    rows = students.map(s => {
+      const status = dayRecord[s.id] || null;
+      return `
+        <div class="card">
+          <div class="row">
+            <div>
+              <h3>${escapeHtml(s.name)}</h3>
+              <p class="sub">${escapeHtml(s.class)}</p>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="small" style="${status==='present' ? 'background:var(--success-bg); color:var(--success); border-color:var(--success);' : ''}" onclick="markAttendance('${s.id}','present')">Yupo</button>
+              <button class="small" style="${status==='absent' ? 'background:var(--danger-bg); color:var(--danger); border-color:var(--danger);' : ''}" onclick="markAttendance('${s.id}','absent')">Hayupo</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  const presentCount = students.filter(s => dayRecord[s.id] === 'present').length;
+  return `
+    <div class="date-picker">
+      <label style="margin:0;">Tarehe:</label>
+      <input type="date" id="att-date" value="${selectedDate}" onchange="changeDate(this.value)" />
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">Waliokuja</div><div class="value">${presentCount}/${students.length}</div></div>
+      <div class="stat"><div class="label">Hawakuja</div><div class="value">${students.length - presentCount}</div></div>
+    </div>
+    ${rows}
+  `;
+}
+function changeDate(val) { selectedDate = val; render(); }
+
+async function markAttendance(studentId, status) {
+  const markedBy = currentUser.role === 'teacher' ? currentUser.id : 'admin';
+  const { error } = await sb.from('student_attendance')
+    .upsert({ date: selectedDate, student_id: studentId, status, marked_by: markedBy }, { onConflict: 'date,student_id' });
+  if (error) { alert('Imeshindikana kuhifadhi: ' + error.message); return; }
+  if (!attendance[selectedDate]) attendance[selectedDate] = {};
+  attendance[selectedDate][studentId] = status;
+  render();
+}
+
+// ---------- RIPOTI (ADMIN) ----------
+function studentAttendanceStats(studentId) {
+  let total = 0, present = 0;
+  Object.keys(attendance).forEach(date => {
+    if (attendance[date][studentId] !== undefined) {
+      total++;
+      if (attendance[date][studentId] === 'present') present++;
+    }
+  });
+  return { total, present, pct: total > 0 ? Math.round((present/total)*100) : 0 };
+}
+
+function reportBodyHtml() {
+  if (students.length === 0) return '<div class="empty">Hakuna wanafunzi bado.</div>';
+  const rows = students.map(s => {
+    const stats = studentAttendanceStats(s.id);
+    return `
+      <div class="card">
+        <div class="row">
+          <div>
+            <h3>${escapeHtml(s.name)}</h3>
+            <p class="sub">${escapeHtml(s.class)} &middot; Siku: ${stats.present}/${stats.total}</p>
+          </div>
+          <div style="font-weight:700; font-size:16px; color:${stats.pct >= 75 ? 'var(--success)' : 'var(--danger)'};">${stats.pct}%</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  return `
+    <div class="export-row">
+      <button class="pdf" onclick="exportReportPDF()">Pakua ripoti PDF</button>
+    </div>
+    <p class="sub" style="margin-bottom:10px;">Asilimia ya mahudhurio ya kila mwanafunzi, kwa siku zote zilizowekwa kumbukumbu.</p>
+    ${rows}
+  `;
+}
+
+function exportReportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(14);
+  doc.text('Ripoti ya Mahudhurio - Shule Yetu', 14, 15);
+  doc.setFontSize(10);
+  doc.text('Tarehe: ' + new Date().toLocaleDateString('sw-TZ'), 14, 21);
+  const body = students.map(s => {
+    const stats = studentAttendanceStats(s.id);
+    return [s.name, s.class, `${stats.present}/${stats.total}`, stats.pct + '%'];
+  });
+  doc.autoTable({ startY: 26, head: [['Jina', 'Darasa', 'Siku alizokuja', 'Asilimia']], body });
+  doc.save('ripoti-mahudhurio.pdf');
+}
+
+// ---------- MAONI (WALIMU) ----------
+function remarksBodyHtml() {
+  const options = students.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.class)})</option>`).join('');
+  const recentHtml = remarks.length === 0
+    ? '<div class="empty">Hakuna maoni bado.</div>'
+    : remarks.slice(0, 20).map(r => {
+        const st = students.find(s => s.id === r.student_id);
+        return `
+          <div class="remark-item">
+            <div style="font-weight:600; font-size:14px;">${st ? escapeHtml(st.name) : 'Mwanafunzi'}</div>
+            <div style="font-size:13px;">${escapeHtml(r.remark)}</div>
+            <div class="meta">${escapeHtml(r.teacher_name || '')} &middot; ${new Date(r.created_at).toLocaleDateString('sw-TZ')}</div>
+          </div>
+        `;
+      }).join('');
+
+  return `
+    <div class="card">
+      <h3>Andika maoni kuhusu mwanafunzi</h3>
+      <label>Chagua mwanafunzi</label>
+      <select id="remark-student" class="plain-select">${options}</select>
+      <label>Maoni</label>
+      <textarea id="remark-text" placeholder="Andika maoni yako hapa..."></textarea>
+      <div id="remark-error" class="error-text"></div>
+      <button class="primary" onclick="submitRemark()">Tuma maoni</button>
+    </div>
+    <div class="card">
+      <h3>Maoni ya hivi karibuni</h3>
+      ${recentHtml}
+    </div>
+  `;
+}
+
+async function submitRemark() {
+  const studentId = document.getElementById('remark-student').value;
+  const text = document.getElementById('remark-text').value.trim();
+  const err = document.getElementById('remark-error');
+  if (!text) { err.textContent = 'Andika maoni kwanza.'; err.style.display = 'block'; return; }
+  const teacher = teachers.find(t => t.id === currentUser.id);
+  const payload = {
+    student_id: studentId,
+    teacher_id: currentUser.role === 'teacher' ? currentUser.id : null,
+    teacher_name: currentUser.role === 'teacher' ? (teacher ? teacher.name : '') : 'Admin',
+    remark: text
+  };
+  const { data, error } = await sb.from('remarks').insert(payload).select();
+  if (error) { err.textContent = 'Imeshindikana: ' + error.message; err.style.display = 'block'; return; }
+  if (data && data[0]) remarks.unshift(data[0]);
+  render();
+}
+
+// ---------- UJUMBE KWA MZAZI (WALIMU) ----------
+function messagesBodyHtml() {
+  const options = students.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.class)})</option>`).join('');
+  const recentHtml = parentMessages.length === 0
+    ? '<div class="empty">Hakuna ujumbe uliotumwa bado.</div>'
+    : parentMessages.slice(0, 20).map(m => {
+        const st = students.find(s => s.id === m.student_id);
+        return `
+          <div class="remark-item">
+            <div style="font-weight:600; font-size:14px;">${st ? escapeHtml(st.name) : 'Mwanafunzi'}</div>
+            <div style="font-size:13px;">${escapeHtml(m.message)}</div>
+            <div class="meta">${escapeHtml(m.teacher_name || '')} &middot; ${new Date(m.created_at).toLocaleDateString('sw-TZ')}</div>
+          </div>
+        `;
+      }).join('');
+
+  return `
+    <div class="card">
+      <h3>Tuma ujumbe kwa mzazi</h3>
+      <label>Chagua mwanafunzi</label>
+      <select id="msg-student" class="plain-select" onchange="updateParentPhoneHint()">${options}</select>
+      <p class="sub" id="parent-phone-hint" style="margin-top:6px;"></p>
+      <label>Ujumbe</label>
+      <textarea id="msg-text" placeholder="Andika ujumbe kwa mzazi..."></textarea>
+      <div id="msg-error" class="error-text"></div>
+      <button class="primary" onclick="sendParentMessage()">Tuma kwa WhatsApp</button>
+    </div>
+    <div class="card">
+      <h3>Ujumbe uliotumwa hivi karibuni</h3>
+      ${recentHtml}
+    </div>
+  `;
+}
+
+function updateParentPhoneHint() {
+  const studentId = document.getElementById('msg-student').value;
+  const st = students.find(s => s.id === studentId);
+  const hint = document.getElementById('parent-phone-hint');
+  if (!hint) return;
+  hint.textContent = (st && st.parent_phone) ? ('Namba ya mzazi: ' + st.parent_phone) : 'Mwanafunzi huyu hana namba ya mzazi iliyowekwa.';
+}
+
+async function sendParentMessage() {
+  const studentId = document.getElementById('msg-student').value;
+  const text = document.getElementById('msg-text').value.trim();
+  const err = document.getElementById('msg-error');
+  const st = students.find(s => s.id === studentId);
+  if (!text) { err.textContent = 'Andika ujumbe kwanza.'; err.style.display = 'block'; return; }
+  if (!st || !st.parent_phone) { err.textContent = 'Mwanafunzi huyu hana namba ya mzazi iliyowekwa.'; err.style.display = 'block'; return; }
+
+  const teacher = teachers.find(t => t.id === currentUser.id);
+  const payload = {
+    student_id: studentId,
+    teacher_id: currentUser.role === 'teacher' ? currentUser.id : null,
+    teacher_name: currentUser.role === 'teacher' ? (teacher ? teacher.name : '') : 'Admin',
+    message: text
+  };
+  const { data, error } = await sb.from('parent_messages').insert(payload).select();
+  if (error) { err.textContent = 'Imeshindikana kuhifadhi: ' + error.message; err.style.display = 'block'; return; }
+  if (data && data[0]) parentMessages.unshift(data[0]);
+
+  const phone = st.parent_phone.replace(/[^0-9]/g, '');
+  const waUrl = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+  window.open(waUrl, '_blank');
+  render();
+}
+
+// ---------- DHARURA (ADMIN + WALIMU) ----------
+function dharuraAdminBodyHtml() {
+  if (emergencies.length === 0) return '<div class="empty">Hakuna taarifa za dharura bado.</div>';
+  return emergencies.map(e => {
+    const st = students.find(s => s.id === e.student_id);
+    return `
+      <div class="card">
+        <div class="row">
+          <div>
+            <h3>${st ? escapeHtml(st.name) : 'Mwanafunzi'}</h3>
+            <p class="sub">${escapeHtml(e.reason)} &middot; ${new Date(e.created_at).toLocaleDateString('sw-TZ')}</p>
+          </div>
+          <span class="badge ${e.status === 'reviewed' ? 'present' : 'absent'}">${e.status === 'reviewed' ? 'Imepitiwa' : 'Inasubiri'}</span>
+        </div>
+        ${e.file_data ? `<a href="${e.file_data}" download="${escapeHtml(e.file_name || 'kielelezo')}" class="link-btn" style="text-align:left;">Pakua kielelezo (${escapeHtml(e.file_name || 'faili')})</a>` : ''}
+        ${e.status !== 'reviewed' ? `<button class="small" style="margin-top:8px;" onclick="markEmergencyReviewed('${e.id}')">Weka kama imepitiwa</button>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function markEmergencyReviewed(id) {
+  const { error } = await sb.from('emergencies').update({ status: 'reviewed' }).eq('id', id);
+  if (error) { alert('Imeshindikana: ' + error.message); return; }
+  const e = emergencies.find(x => String(x.id) === String(id));
+  if (e) e.status = 'reviewed';
+  render();
+}
+
+// ---------- MWANAFUNZI (SELF VIEW) ----------
+function renderStudentSelf() {
+  document.getElementById('logout-btn').style.display = 'inline-block';
+  document.getElementById('back-btn').style.display = 'none';
+  const main = document.getElementById('main');
+  const s = students.find(x => x.id === currentUser.id);
+  if (!s) { logout(); return; }
+  const stats = studentAttendanceStats(s.id);
+  const today = todayStr();
+  const markedToday = attendance[today] && attendance[today][s.id];
+
+  const history = Object.keys(attendance)
+    .filter(date => attendance[date][s.id] !== undefined)
+    .sort().reverse().slice(0, 14)
+    .map(date => `
+      <div class="row" style="padding:8px 0; border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;">${date}</span>
+        <span class="badge ${attendance[date][s.id]==='present' ? 'present' : 'absent'}">${attendance[date][s.id]==='present' ? 'Alikuja' : 'Hakuja'}</span>
+      </div>
+    `).join('');
+
+  const myRemarks = remarks.filter(r => r.student_id === s.id);
+  const remarksHtml = myRemarks.length === 0
+    ? '<p class="sub" style="margin:0;">Hakuna maoni bado kutoka kwa walimu.</p>'
+    : myRemarks.slice(0, 10).map(r => `
+        <div class="remark-item">
+          <div style="font-size:13px;">${escapeHtml(r.remark)}</div>
+          <div class="meta">${escapeHtml(r.teacher_name || '')} &middot; ${new Date(r.created_at).toLocaleDateString('sw-TZ')}</div>
+        </div>
+      `).join('');
+
+  const myEmergencies = emergencies.filter(e => e.student_id === s.id);
+  const emergenciesHtml = myEmergencies.length === 0 ? '' : myEmergencies.slice(0,5).map(e => `
+    <div class="remark-item">
+      <div style="font-size:13px; font-weight:600;">${escapeHtml(e.reason)}</div>
+      <div class="meta">${new Date(e.created_at).toLocaleDateString('sw-TZ')} &middot; ${e.status === 'reviewed' ? 'Imepitiwa' : 'Inasubiri'}</div>
+    </div>
+  `).join('');
+
+  main.innerHTML = `
+    <div class="card">
+      <div style="display:flex; gap:12px; align-items:center;">
+        ${s.photo ? `<img src="${s.photo}" class="passport-photo" />` : `<div class="passport-placeholder">Hakuna picha</div>`}
+        <div>
+          <h3 style="margin:0;">${escapeHtml(s.name)}<span class="role-badge">Mwanafunzi</span></h3>
+          <p class="sub" style="margin:2px 0 0;">${escapeHtml(s.class)}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat"><div class="label">Asilimia ya mahudhurio</div><div class="value">${stats.pct}%</div></div>
+      <div class="stat"><div class="label">Siku alizokuja</div><div class="value">${stats.present}/${stats.total}</div></div>
+    </div>
+
+    <div class="card">
+      <h3>Mahudhurio ya leo</h3>
+      ${markedToday
+        ? `<div class="status-pill">${markedToday === 'present' ? 'Umeshajiandikisha: Upo shuleni leo' : 'Umewekwa: Hupo shuleni leo'}</div>`
+        : `<button class="self-mark-btn" onclick="markSelfPresent('${s.id}')">Nipo shuleni leo</button>
+           <p class="sub" style="margin-top:8px;">Kama una dharura (mfano ni mgonjwa), jaza fomu ya Dharura chini badala ya kujiandikisha hapa.</p>`}
+    </div>
+
+    <div class="card">
+      <h3>Toa taarifa ya Dharura</h3>
+      <p class="sub">Kama huwezi kuja shuleni kwa sababu ya ugonjwa au dharura nyingine, jaza fomu hii.</p>
+      <label>Sababu</label>
+      <select id="dharura-reason" class="plain-select">
+        <option value="Mgonjwa">Mgonjwa</option>
+        <option value="Dharura ya familia">Dharura ya familia</option>
+        <option value="Nyingine">Nyingine</option>
+      </select>
+      <label>Ambatanisha kielelezo (fomu ya daktari - PDF au picha)</label>
+      <input id="dharura-file" type="file" accept="application/pdf,image/*" />
+      <div id="dharura-error" class="error-text"></div>
+      <button class="primary" onclick="submitEmergency('${s.id}')">Tuma taarifa ya Dharura</button>
+      ${emergenciesHtml ? `<div style="margin-top:14px;">${emergenciesHtml}</div>` : ''}
+    </div>
+
+    <div class="card">
+      <h3>Maoni ya walimu</h3>
+      ${remarksHtml}
+    </div>
+
+    <div class="card">
+      <h3>Historia ya hivi karibuni</h3>
+      ${history || '<p class="sub">Hakuna kumbukumbu bado.</p>'}
+    </div>
+    <div class="card">
+      <p class="sub" style="margin:0;">Umesahau password? Muombe Admin wa shule akubadilishie.</p>
+    </div>
+  `;
+}
+
+async function markSelfPresent(studentId) {
+  const { error } = await sb.from('student_attendance')
+    .upsert({ date: todayStr(), student_id: studentId, status: 'present', marked_by: 'self' }, { onConflict: 'date,student_id' });
+  if (error) { alert('Imeshindikana: ' + error.message); return; }
+  if (!attendance[todayStr()]) attendance[todayStr()] = {};
+  attendance[todayStr()][studentId] = 'present';
+  renderStudentSelf();
+}
+
+async function submitEmergency(studentId) {
+  const reason = document.getElementById('dharura-reason').value;
+  const file = document.getElementById('dharura-file').files[0];
+  const err = document.getElementById('dharura-error');
+  let fileData = null, fileName = null;
+  if (file) {
+    try { fileData = await fileToBase64(file); fileName = file.name; }
+    catch (e) { err.textContent = 'Imeshindikana kusoma faili.'; err.style.display = 'block'; return; }
+  }
+  const payload = { student_id: studentId, reason, file_data: fileData, file_name: fileName, status: 'pending' };
+  const { data, error } = await sb.from('emergencies').insert(payload).select();
+  if (error) { err.textContent = 'Imeshindikana: ' + error.message; err.style.display = 'block'; return; }
+  if (data && data[0]) emergencies.unshift(data[0]);
+  alert('Taarifa ya dharura imetumwa. Mwalimu/Admin ataipitia.');
+  renderStudentSelf();
+}
+</script>
+
+</body>
+</html>
